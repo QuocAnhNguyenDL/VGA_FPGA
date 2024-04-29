@@ -22,9 +22,9 @@ always @(posedge CLK) begin
 	end
 	else
 	begin
-		R <= 1'b1;
-		G <= 1'b1;
-		B <= 1'b1;
+		R <= 1'b0;
+		G <= 1'b0;
+		B <= 1'b0;
 	end
 	
    if (HPOS < 1688) begin
