@@ -1,0 +1,87 @@
+module SYNC (
+    input CLK,
+    output reg HSYNC,
+    output reg VSYNC,
+    output reg [3:0] R,
+    output reg [3:0] G,
+    output reg [3:0] B,
+    input [3:0] KEYS,
+    input [1:0] S
+);
+
+// 1280x1024 @ 60 Hz pixel clock 108 MHz
+reg [3:0] RGB;
+reg [10:0] SQ_X1, SQ_Y1;
+reg [10:0] SQ_X2, SQ_Y2;
+reg DRAW1, DRAW2;
+reg [10:0] HPOS;
+reg [10:0] VPOS;
+
+always @(posedge CLK) begin
+    if (DRAW1) begin
+        if (S[0]) begin
+            R <= 4'b1111;
+            G <= 4'b0000;
+            B <= 4'b0000;
+        end else begin
+            R <= 4'b1111;
+            G <= 4'b1111;
+            B <= 4'b1111;
+        end
+    end
+    if (DRAW2) begin
+        if (S[1]) begin
+            R <= 4'b1111;
+            G <= 4'b0000;
+            B <= 4'b0000;
+        end else begin
+            R <= 4'b1111;
+            G <= 4'b1111;
+            B <= 4'b1111;
+        end
+    end
+    if (!DRAW1 && !DRAW2) begin
+        R <= 4'b0000;
+        G <= 4'b0000;
+        B <= 4'b0000;
+    end
+    if (HPOS < 1688) begin
+        HPOS <= HPOS + 1;
+    end else begin
+        HPOS <= 0;
+        if (VPOS < 1066) begin
+            VPOS <= VPOS + 1;
+        end else begin
+            VPOS <= 0;
+            if (S[0]) begin
+                if (!KEYS[0]) SQ_X1 <= SQ_X1 + 5;
+                if (!KEYS[1]) SQ_X1 <= SQ_X1 - 5;
+                if (!KEYS[2]) SQ_Y1 <= SQ_Y1 - 5;
+                if (!KEYS[3]) SQ_Y1 <= SQ_Y1 + 5;
+            end
+            if (S[1]) begin
+                if (!KEYS[0]) SQ_X2 <= SQ_X2 + 5;
+                if (!KEYS[1]) SQ_X2 <= SQ_X2 - 5;
+                if (!KEYS[2]) SQ_Y2 <= SQ_Y2 - 5;
+                if (!KEYS[3]) SQ_Y2 <= SQ_Y2 + 5;
+            end
+        end
+    end
+    if ((HPOS > 0 && HPOS < 408) || (VPOS > 0 && VPOS < 42)) begin
+        R <= 4'b0000;
+        G <= 4'b0000;
+        B <= 4'b0000;
+    end
+    if (HPOS > 48 && HPOS < 160) begin
+        HSYNC <= 1'b0;
+    end else begin
+        HSYNC <= 1'b1;
+    end
+    if (VPOS > 0 && VPOS < 4) begin
+        VSYNC <= 1'b0;
+    end else begin
+        VSYNC <= 1'b1;
+    end
+end
+
+endmodule
